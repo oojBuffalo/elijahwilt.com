@@ -39,3 +39,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# assets (resume, images, etc.)
+/assets/
+
+# personal / private
+.terminus_pub_key
+BIO.md
+CLAUDE.md
+
+# agentic / editor config directories
+.agent/
+.agents/
+.claude/
+.codex/
+.cursor/
+.gemini/
+.opencode/
+.playwright-mcp/
+.windsurf/

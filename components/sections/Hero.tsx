@@ -3,58 +3,118 @@
 import { useState } from "react";
 import { TypeWriter } from "../terminal/TypeWriter";
 import { Cursor } from "../terminal/Cursor";
-import { personalInfo } from "@/lib/data";
+import { heroTerminalLines } from "@/lib/data";
+import { InlineMath } from "react-katex";
+import "katex/dist/katex.min.css";
+
+const MathText = ({ text }: { text: string }) => {
+  const parts = text.split(/(\$[^\$]+\$)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith("$") && part.endsWith("$")) {
+          const math = part.slice(1, -1);
+          return <InlineMath key={i} math={math} />;
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
+};
+
+// phase: 'prompt' = typing the prompt, 'output' = typing the output
+type Phase = "prompt" | "output";
 
 export function Hero() {
   const [lineIndex, setLineIndex] = useState(0);
+  const [phase, setPhase] = useState<Phase>("prompt");
 
-  const lines = [
-    { prompt: "$ whoami", output: personalInfo.name },
-    { prompt: "$ cat role.txt", output: personalInfo.title + " | " + personalInfo.subtitle },
-    { prompt: "$ cat tagline.txt", output: personalInfo.tagline },
-  ];
+  const lines = heroTerminalLines;
+  const isLastLine = lineIndex === lines.length - 1;
+
+  function advancePhase() {
+    if (phase === "prompt") {
+      // Done typing prompt → start typing output
+      setPhase("output");
+    } else {
+      // Done typing output → move to next line's prompt
+      if (!isLastLine) {
+        setLineIndex((prev) => prev + 1);
+        setPhase("prompt");
+      }
+    }
+  }
 
   return (
-    <section className="min-h-screen flex flex-col justify-center px-6 py-20 max-w-4xl mx-auto">
+    <section className="min-h-screen flex flex-col justify-center px-6 py-20 max-w-6xl mx-auto">
       <div className="font-mono space-y-6">
-        {lines.map((line, index) => (
-          <div key={index} className={index > lineIndex ? "opacity-0" : "opacity-100"}>
-            {index <= lineIndex && (
-              <>
+        {lines.map((line, index) => {
+          const isPast = index < lineIndex;
+          const isCurrent = index === lineIndex;
+          const isFuture = index > lineIndex;
+
+          if (isFuture) return <div key={index} className="opacity-0" />;
+
+          // Past lines: render statically
+          if (isPast) {
+            return (
+              <div key={index}>
                 <div className="text-text-secondary mb-1">
                   <span className="text-accent-green">elijah@portfolio</span>
                   <span className="text-text-secondary"> ~ </span>
-                  {index === lineIndex ? (
-                    <TypeWriter
-                      text={line.prompt.slice(2)}
-                      delay={40}
-                      showCursor={false}
-                      onComplete={() => {
-                        setTimeout(() => {
-                          if (lineIndex < lines.length - 1) {
-                            setLineIndex((prev) => prev + 1);
-                          }
-                        }, 300);
-                      }}
-                    />
-                  ) : (
-                    <span>{line.prompt.slice(2)}</span>
-                  )}
+                  <span>{line.prompt.slice(2)}</span>
                 </div>
                 <div
-                  className={`text-2xl sm:text-3xl md:text-4xl font-bold animate-fade-in ${
-                    index === 0 ? "text-text-primary" : "text-accent-cyan"
-                  }`}
+                  className={`text-xl sm:text-2xl md:text-3xl font-bold whitespace-pre-wrap ${index === 0 ? "text-text-primary" : "text-accent-cyan"
+                    }`}
                 >
-                  {">"} {line.output}
-                  {index === lines.length - 1 && lineIndex === lines.length - 1 && (
-                    <Cursor />
-                  )}
+                  {line.output.split("\n").map((part, partIndex) => (
+                    <div key={partIndex}>
+                      {">"} <MathText text={part} />
+                    </div>
+                  ))}
                 </div>
-              </>
-            )}
-          </div>
-        ))}
+              </div>
+            );
+          }
+
+          // Current line — animate prompt then output
+          return (
+            <div key={index}>
+              {/* Prompt row */}
+              <div className="text-text-secondary mb-1">
+                <span className="text-accent-green">elijah@portfolio</span>
+                <span className="text-text-secondary"> ~ </span>
+                {phase === "prompt" ? (
+                  <TypeWriter
+                    text={line.prompt.slice(2)}
+                    delay={40}
+                    showCursor={false}
+                    onComplete={() => setTimeout(advancePhase, 200)}
+                  />
+                ) : (
+                  <span>{line.prompt.slice(2)}</span>
+                )}
+              </div>
+
+              {/* Output row — only shown once prompt finishes */}
+              {phase === "output" && (
+                <div
+                  className={`text-xl sm:text-2xl md:text-3xl font-bold whitespace-pre-wrap ${index === 0 ? "text-text-primary" : "text-accent-cyan"
+                    }`}
+                >
+                  <TypeWriter
+                    text={line.output}
+                    delay={20}
+                    showCursor={false}
+                    onComplete={() => setTimeout(advancePhase, 350)}
+                  />
+                  {isLastLine && <Cursor />}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className="mt-16 animate-fade-in animate-delay-500">

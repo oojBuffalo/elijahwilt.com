@@ -1,0 +1,26 @@
+.git
+.gitignore
+.next
+node_modules
+npm-debug.log*
+
+# Editor / IDE
+.cursor
+.windsurf
+.opencode
+.codex
+.claude
+.gemini
+.agents
+.agent
+.DS_Store
+
+# Env files (injected at runtime via docker-compose)
+.env
+.env.local
+.env.*.local
+
+# Playwright / test artifacts
+.playwright-mcp
+
+README.md

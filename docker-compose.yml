@@ -1,0 +1,17 @@
+services:
+  web:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "3314:3314"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    command: sh -c "npm install && npm run dev"
+    restart: unless-stopped
