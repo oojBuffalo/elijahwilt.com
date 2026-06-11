@@ -1,16 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { useInView } from "@/lib/useInView";
+import { useSearchParam, setSearchParam } from "@/lib/useSearchParam";
 import { projects } from "@/lib/data";
 import { cn } from "@/lib/cn";
 
 export function Projects() {
   const { ref, isInView } = useInView<HTMLElement>();
-  const [expandedProject, setExpandedProject] = useState<string | null>(null);
+  // Deep-link: the ?project= param is the single source of truth for which
+  // panel is open. useSearchParam re-renders on URL changes (incl. back/forward).
+  const urlProject = useSearchParam("project");
+  const expandedProject =
+    urlProject && projects.some((project) => project.id === urlProject)
+      ? urlProject
+      : null;
 
   const toggleProject = (id: string) => {
-    setExpandedProject((prev) => (prev === id ? null : id));
+    setSearchParam("project", expandedProject === id ? null : id);
   };
 
   return (
@@ -59,6 +65,7 @@ export function Projects() {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -71,21 +78,25 @@ export function Projects() {
 
               <div
                 className={cn(
-                  "overflow-hidden transition-all duration-300",
-                  isExpanded ? "max-h-96" : "max-h-0"
+                  "grid transition-[grid-template-rows] duration-300 motion-reduce:transition-none",
+                  isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                 )}
               >
-                <div className="px-4 py-4 bg-bg-primary border-t border-border">
-                  <p className="text-text-primary mb-4">{project.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {project.tech.map((tech) => (
-                      <span
-                        key={tech}
-                        className="px-2 py-1 text-xs font-mono bg-bg-secondary border border-border rounded text-accent-cyan"
-                      >
-                        {tech}
-                      </span>
-                    ))}
+                <div className="min-h-0 overflow-hidden">
+                  <div className="px-4 py-4 bg-bg-primary border-t border-border">
+                    <p className="text-text-primary mb-4">
+                      {project.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tech.map((tech) => (
+                        <span
+                          key={tech}
+                          className="px-2 py-1 text-xs font-mono bg-bg-secondary border border-border rounded text-accent-cyan"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

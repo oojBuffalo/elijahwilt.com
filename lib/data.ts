@@ -1,8 +1,8 @@
 export const personalInfo = {
   name: "Elijah Wayne Wilt",
   title: "Technologist\nML Engineer\nAgentic Engineer",
-  tagline: "I dwell inside a (bash) shell \u{1F99E}...",
-  subtitle: "Nondegree  | Grad  | The Ohio State University | Current\nB.S. in CS | UGrad | Cornell University | 2020",
+  tagline: "I dwell inside a (bash) shell \u{1F99E}…",
+  subtitle: "Post-Baccalaureate in AI | Grad  | The Ohio State University | Current\n Bachelors in CS | UGrad | Cornell University | 2020",
   email: "ew356@cornell.edu",
   email2: "wilt.83@osu.edu",
   email3: "ooj@wilttechnologies.com",
@@ -22,8 +22,8 @@ export const heroTerminalLines = [
 export const about = {
   paragraphs: [
     "I am a versatile engineer with strong foundations in machine learning, data systems, and full-stack development. Currently pursuing graduate studies at Ohio State University while bringing practical experience from building production systems—from embedded hardware to ML pipelines.",
-    "I'm someone who genuinely enjoys working with technology—not just the trendy stuff, but understanding how systems actually work. Whether it's training neural networks, writing shell scripts, or debugging embedded systems, I like getting my hands dirty with the technical details.",
-    "I love a good terminal workflow. There's something satisfying about elegant command-line tools and automation scripts. Recently built a Sudoku SAT solver with a TUI just for the fun of creating something clean and useful in the terminal.",
+    "I’m someone who genuinely enjoys working with technology—not just the trendy stuff, but understanding how systems actually work. Whether it’s training neural networks, writing shell scripts, or debugging embedded systems, I like getting my hands dirty with the technical details.",
+    "I love a good terminal workflow. There’s something satisfying about elegant command-line tools and automation scripts. Recently built a Sudoku SAT solver with a TUI just for the fun of creating something clean and useful in the terminal.",
   ],
 };
 
@@ -166,7 +166,7 @@ export const experience = [
     company: "DataHub, LLC",
     period: "Mar – Jun 2019",
     description:
-      "Administered systems for IBM's Guardium distributed database security service. Worked with enterprise-scale data infrastructure.",
+      "Administered systems for IBM’s Guardium distributed database security service. Worked with enterprise-scale data infrastructure.",
   },
 ];
 

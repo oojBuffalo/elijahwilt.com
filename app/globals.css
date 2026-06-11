@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: dark;
   --bg-primary: #0d1117;
   --bg-secondary: #161b22;
   --text-primary: #e6edf3;
@@ -40,16 +41,6 @@ body {
 
 .cursor-blink {
   animation: blink 1s step-end infinite;
-}
-
-/* Typing animation */
-@keyframes typing {
-  from {
-    width: 0;
-  }
-  to {
-    width: 100%;
-  }
 }
 
 /* Fade in animation */
@@ -121,6 +112,24 @@ body {
 :focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
+}
+
+/* Keep anchor targets clear of the viewport edge */
+section[id] {
+  scroll-margin-top: 2rem;
+}
+
+/* Touch ergonomics */
+a,
+button,
+input,
+textarea,
+select {
+  touch-action: manipulation;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Selection styles */

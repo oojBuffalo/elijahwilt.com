@@ -8,7 +8,7 @@ import { Contact } from "@/components/sections/Contact";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-bg-primary">
+    <main id="main-content" className="min-h-screen bg-bg-primary">
       <Hero />
       <About />
       <Projects />

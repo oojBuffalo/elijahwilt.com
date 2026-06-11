@@ -1,26 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { useInView } from "@/lib/useInView";
+import { useSearchParam, setSearchParam } from "@/lib/useSearchParam";
 import { skills } from "@/lib/data";
 import { cn } from "@/lib/cn";
 
 export function Skills() {
   const { ref, isInView } = useInView<HTMLElement>();
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set()
+  // Deep-link: the ?skills= param (comma-separated category names) is the single
+  // source of truth. useSearchParam re-renders on URL changes (incl. back/forward).
+  const urlSkills = useSearchParam("skills");
+  const expandedCategories = useMemo(
+    () =>
+      new Set(
+        (urlSkills ?? "")
+          .split(",")
+          .filter((category) => Object.hasOwn(skills, category))
+      ),
+    [urlSkills]
   );
 
   const toggleCategory = (category: string) => {
-    setExpandedCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(category)) {
-        next.delete(category);
-      } else {
-        next.add(category);
-      }
-      return next;
-    });
+    const next = new Set(expandedCategories);
+    if (next.has(category)) {
+      next.delete(category);
+    } else {
+      next.add(category);
+    }
+    setSearchParam("skills", next.size > 0 ? Array.from(next).join(",") : null);
   };
 
   const categories = Object.entries(skills);
@@ -59,6 +67,7 @@ export function Skills() {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -71,19 +80,21 @@ export function Skills() {
 
               <div
                 className={cn(
-                  "overflow-hidden transition-all duration-300",
-                  isExpanded ? "max-h-96" : "max-h-0"
+                  "grid transition-[grid-template-rows] duration-300 motion-reduce:transition-none",
+                  isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
                 )}
               >
-                <div className="px-4 py-4 flex flex-wrap gap-2 bg-bg-primary">
-                  {skillList.map((skill) => (
-                    <span
-                      key={skill}
-                      className="px-3 py-1 text-sm font-mono bg-bg-secondary border border-border rounded text-text-primary hover:border-accent-cyan transition-colors"
-                    >
-                      {skill}
-                    </span>
-                  ))}
+                <div className="min-h-0 overflow-hidden">
+                  <div className="px-4 py-4 flex flex-wrap gap-2 bg-bg-primary">
+                    {skillList.map((skill) => (
+                      <span
+                        key={skill}
+                        className="px-3 py-1 text-sm font-mono bg-bg-secondary border border-border rounded text-text-primary hover:border-accent-cyan transition-colors"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

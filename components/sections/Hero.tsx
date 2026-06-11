@@ -25,6 +25,37 @@ const MathText = ({ text }: { text: string }) => {
 // phase: 'prompt' = typing the prompt, 'output' = typing the output
 type Phase = "prompt" | "output";
 
+type TerminalLine = (typeof heroTerminalLines)[number];
+
+const outputClasses = (index: number) =>
+  `text-xl sm:text-2xl md:text-3xl font-bold whitespace-pre-wrap ${
+    index === 0 ? "text-text-primary" : "text-accent-cyan"
+  }`;
+
+const StaticPrompt = ({ line }: { line: TerminalLine }) => (
+  <div className="text-text-secondary mb-1">
+    <span className="text-accent-green">elijah@portfolio</span>
+    <span className="text-text-secondary"> ~ </span>
+    <span>{line.prompt.slice(2)}</span>
+  </div>
+);
+
+const StaticOutput = ({
+  line,
+  index,
+}: {
+  line: TerminalLine;
+  index: number;
+}) => (
+  <div className={outputClasses(index)}>
+    {line.output.split("\n").map((part, partIndex) => (
+      <div key={partIndex}>
+        {">"} <MathText text={part} />
+      </div>
+    ))}
+  </div>
+);
+
 export function Hero() {
   const [lineIndex, setLineIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("prompt");
@@ -47,33 +78,35 @@ export function Hero() {
 
   return (
     <section className="min-h-screen flex flex-col justify-center px-6 py-20 max-w-6xl mx-auto">
-      <div className="font-mono space-y-6">
+      {/* Static copy for assistive tech; the typed terminal below is decorative */}
+      <div className="sr-only">
+        <h1>{lines[0].output}</h1>
+        {lines.slice(1).map((line, index) => (
+          <p key={index}>{line.output}</p>
+        ))}
+      </div>
+
+      <div className="font-mono space-y-6" aria-hidden="true">
         {lines.map((line, index) => {
           const isPast = index < lineIndex;
-          const isCurrent = index === lineIndex;
           const isFuture = index > lineIndex;
 
-          if (isFuture) return <div key={index} className="opacity-0" />;
+          // Future lines: render invisibly so layout doesn't shift as lines appear
+          if (isFuture) {
+            return (
+              <div key={index} className="invisible">
+                <StaticPrompt line={line} />
+                <StaticOutput line={line} index={index} />
+              </div>
+            );
+          }
 
           // Past lines: render statically
           if (isPast) {
             return (
               <div key={index}>
-                <div className="text-text-secondary mb-1">
-                  <span className="text-accent-green">elijah@portfolio</span>
-                  <span className="text-text-secondary"> ~ </span>
-                  <span>{line.prompt.slice(2)}</span>
-                </div>
-                <div
-                  className={`text-xl sm:text-2xl md:text-3xl font-bold whitespace-pre-wrap ${index === 0 ? "text-text-primary" : "text-accent-cyan"
-                    }`}
-                >
-                  {line.output.split("\n").map((part, partIndex) => (
-                    <div key={partIndex}>
-                      {">"} <MathText text={part} />
-                    </div>
-                  ))}
-                </div>
+                <StaticPrompt line={line} />
+                <StaticOutput line={line} index={index} />
               </div>
             );
           }
@@ -97,12 +130,8 @@ export function Hero() {
                 )}
               </div>
 
-              {/* Output row — only shown once prompt finishes */}
-              {phase === "output" && (
-                <div
-                  className={`text-xl sm:text-2xl md:text-3xl font-bold whitespace-pre-wrap ${index === 0 ? "text-text-primary" : "text-accent-cyan"
-                    }`}
-                >
+              {phase === "output" ? (
+                <div className={outputClasses(index)}>
                   <TypeWriter
                     text={line.output}
                     delay={20}
@@ -110,6 +139,11 @@ export function Hero() {
                     onComplete={() => setTimeout(advancePhase, 350)}
                   />
                   {isLastLine && <Cursor />}
+                </div>
+              ) : (
+                // Reserve the output's final height while the prompt types
+                <div className="invisible">
+                  <StaticOutput line={line} index={index} />
                 </div>
               )}
             </div>
@@ -124,10 +158,11 @@ export function Hero() {
         >
           <span className="font-mono text-sm">scroll for more</span>
           <svg
-            className="w-4 h-4 animate-bounce"
+            className="w-4 h-4 motion-safe:animate-bounce"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
