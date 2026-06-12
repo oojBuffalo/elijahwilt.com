@@ -32,6 +32,17 @@ const outputClasses = (index: number) =>
     index === 0 ? "text-text-primary" : "text-accent-cyan"
   }`;
 
+// The exact multi-line string the output TypeWriter types: a "> " prefix per
+// line. The invisible reserve renders this same plain text (StaticOutput's
+// `plain` mode), so the typed overlay and the reserve stay the same size even
+// if an output ever contains a $math$ span (both show it literally; settled
+// lines still render math via MathText).
+const typedOutput = (line: TerminalLine) =>
+  line.output
+    .split("\n")
+    .map((part) => "> " + part)
+    .join("\n");
+
 const StaticPrompt = ({ line }: { line: TerminalLine }) => (
   <div className="text-text-secondary mb-1">
     <span className="text-accent-green">elijah@portfolio</span>
@@ -43,14 +54,21 @@ const StaticPrompt = ({ line }: { line: TerminalLine }) => (
 const StaticOutput = ({
   line,
   index,
+  withCursor = false,
+  plain = false,
 }: {
   line: TerminalLine;
   index: number;
+  withCursor?: boolean;
+  // plain renders the raw text instead of MathText, matching the typed overlay
+  // exactly; used for the invisible size-reserving copy of the current line.
+  plain?: boolean;
 }) => (
   <div className={outputClasses(index)}>
-    {line.output.split("\n").map((part, partIndex) => (
+    {line.output.split("\n").map((part, partIndex, parts) => (
       <div key={partIndex}>
-        {">"} <MathText text={part} />
+        {">"} {plain ? part : <MathText text={part} />}
+        {withCursor && partIndex === parts.length - 1 && <Cursor />}
       </div>
     ))}
   </div>
@@ -62,17 +80,20 @@ export function Hero() {
 
   const lines = heroTerminalLines;
   const isLastLine = lineIndex === lines.length - 1;
+  // Past the last line: every line renders statically and the cursor parks
+  // at the end of the final output.
+  const done = lineIndex >= lines.length;
 
   function advancePhase() {
     if (phase === "prompt") {
       // Done typing prompt → start typing output
       setPhase("output");
     } else {
-      // Done typing output → move to next line's prompt
-      if (!isLastLine) {
-        setLineIndex((prev) => prev + 1);
-        setPhase("prompt");
-      }
+      // Done typing output → move to next line's prompt (or the done state).
+      // Captured lineIndex (not a functional updater) keeps this idempotent
+      // when Strict Mode's double effect fires onComplete twice.
+      setLineIndex(lineIndex + 1);
+      setPhase("prompt");
     }
   }
 
@@ -106,7 +127,11 @@ export function Hero() {
             return (
               <div key={index}>
                 <StaticPrompt line={line} />
-                <StaticOutput line={line} index={index} />
+                <StaticOutput
+                  line={line}
+                  index={index}
+                  withCursor={done && index === lines.length - 1}
+                />
               </div>
             );
           }
@@ -130,22 +155,32 @@ export function Hero() {
                 )}
               </div>
 
-              {phase === "output" ? (
-                <div className={outputClasses(index)}>
-                  <TypeWriter
-                    text={line.output}
-                    delay={20}
-                    showCursor={false}
-                    onComplete={() => setTimeout(advancePhase, 350)}
-                  />
-                  {isLastLine && <Cursor />}
-                </div>
-              ) : (
-                // Reserve the output's final height while the prompt types
+              {/* The invisible static copy reserves the output's final size
+                  through both phases; the typing overlays it out-of-flow so
+                  the layout never shifts. Both render `typedOutput` (the
+                  `plain` reserve below and the TypeWriter), so they stay the
+                  same size even if an output contains a $math$ span. */}
+              <div className="relative">
                 <div className="invisible">
-                  <StaticOutput line={line} index={index} />
+                  <StaticOutput
+                    line={line}
+                    index={index}
+                    withCursor={isLastLine}
+                    plain
+                  />
                 </div>
-              )}
+                {phase === "output" && (
+                  <div className={`absolute inset-0 ${outputClasses(index)}`}>
+                    <TypeWriter
+                      text={typedOutput(line)}
+                      delay={20}
+                      showCursor={false}
+                      onComplete={() => setTimeout(advancePhase, 350)}
+                    />
+                    {isLastLine && <Cursor />}
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}

@@ -2,7 +2,7 @@ export const personalInfo = {
   name: "Elijah Wayne Wilt",
   title: "Technologist\nML Engineer\nAgentic Engineer",
   tagline: "I dwell inside a (bash) shell \u{1F99E}…",
-  subtitle: "Post-Baccalaureate in AI | Grad  | The Ohio State University | Current\n Bachelors in CS | UGrad | Cornell University | 2020",
+  subtitle: "Grad  | AI @ tOSU    | Current\nUGrad | CS @ Cornell | 2020",
   email: "ew356@cornell.edu",
   email2: "wilt.83@osu.edu",
   email3: "ooj@wilttechnologies.com",
@@ -148,7 +148,7 @@ export const experience = [
       "Pursuing graduate studies in ML/AI. Coursework includes Machine Learning, Neural Networks, Computer Vision, NLP. GPA: 3.88/4.00.",
   },
   {
-    title: "Founder & CEO",
+    title: "Founder",
     company: "Wilt Technologies, LLC",
     period: "2021 – 2024",
     description:
