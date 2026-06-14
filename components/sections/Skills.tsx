@@ -5,6 +5,7 @@ import { useInView } from "@/lib/useInView";
 import { useSearchParam, setSearchParam } from "@/lib/useSearchParam";
 import { skills } from "@/lib/data";
 import { cn } from "@/lib/cn";
+import { Disclosure } from "@/components/Disclosure";
 
 export function Skills() {
   const { ref, isInView } = useInView<HTMLElement>();
@@ -34,7 +35,7 @@ export function Skills() {
   const categories = Object.entries(skills);
 
   return (
-    <section id="skills" ref={ref} className="px-6 py-20 max-w-4xl mx-auto">
+    <section id="skills" ref={ref} className="px-6 py-20 max-w-5xl mx-auto">
       <h2 className="font-mono text-text-secondary mb-8">
         <span className="text-accent-green">~/skills</span> $ ls -la
       </h2>
@@ -42,6 +43,9 @@ export function Skills() {
       <div className="space-y-3">
         {categories.map(([category, skillList], index) => {
           const isExpanded = expandedCategories.has(category);
+          const panelId = `skills-panel-${category
+            .replace(/[^a-z]+/gi, "-")
+            .toLowerCase()}`;
 
           return (
             <div
@@ -57,6 +61,7 @@ export function Skills() {
                 onClick={() => toggleCategory(category)}
                 className="w-full px-4 py-3 flex items-center justify-between bg-bg-secondary hover:bg-border/30 transition-colors text-left"
                 aria-expanded={isExpanded}
+                aria-controls={panelId}
               >
                 <span className="font-mono text-accent-cyan">{category}/</span>
                 <svg
@@ -78,25 +83,18 @@ export function Skills() {
                 </svg>
               </button>
 
-              <div
-                className={cn(
-                  "grid transition-[grid-template-rows] duration-300 motion-reduce:transition-none",
-                  isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-                )}
-              >
-                <div className="min-h-0 overflow-hidden">
-                  <div className="px-4 py-4 flex flex-wrap gap-2 bg-bg-primary">
-                    {skillList.map((skill) => (
-                      <span
-                        key={skill}
-                        className="px-3 py-1 text-sm font-mono bg-bg-secondary border border-border rounded text-text-primary hover:border-accent-cyan transition-colors"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
+              <Disclosure id={panelId} open={isExpanded}>
+                <div className="px-4 py-4 flex flex-wrap gap-2 bg-bg-primary">
+                  {skillList.map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-3 py-1 text-sm font-mono bg-bg-secondary border border-border rounded text-text-primary hover:border-accent-cyan transition-colors"
+                    >
+                      {skill}
+                    </span>
+                  ))}
                 </div>
-              </div>
+              </Disclosure>
             </div>
           );
         })}

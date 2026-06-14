@@ -59,7 +59,8 @@ export default function RootLayout({
 
 ## `app/page.tsx`
 
-The home page — a Server Component that composes the seven sections.
+The home page — a Server Component that composes the sticky section nav and
+six content sections.
 
 ### Exports
 
@@ -71,12 +72,16 @@ export default function Home(): JSX.Element
 
 **Parameters:** none.
 
-**Returns:** `<main id="main-content">` containing, in order: `<Hero />`,
-`<About />`, `<Projects />`, `<Skills />`, `<Experience />`, `<Education />`,
-`<Contact />`, then a footer rendering `$ exit 0` in terminal style.
+**Returns:** a fragment containing `<Nav />` followed by
+`<main id="main-content">`. The `<main>` renders, in order: `<Hero />`,
+`<About />`, `<Timeline />`, `<Projects />`, `<Skills />`, `<Contact />`,
+then a footer rendering `$ exit 0` in terminal style.
 
-`id="main-content"` is the skip-link target from the root layout. Section
-components are documented in
+`<Nav />` is the sticky scroll-spy section nav (see
+[../components/README.md](../components/README.md)). `id="main-content"` is
+the skip-link target from the root layout. The unified work-and-education
+`Timeline` replaces the former separate `Experience`/`Education` sections.
+Section components are documented in
 [../components/sections/README.md](../components/sections/README.md).
 
 ---
@@ -116,15 +121,16 @@ Tailwind color/font tokens in an `@theme inline` block:
 
 All three animation families are neutralized under
 `@media (prefers-reduced-motion: reduce)` — content renders in its final
-state with no animation or transition.
+state with no animation or transition, and `html { scroll-behavior: auto }`
+disables smooth scrolling.
 
 ### Other global rules
 
 - `body` — dark background, light text, Geist Sans with system fallback.
 - `:focus-visible` — 2px `--accent-cyan` outline with 2px offset.
-- `section[id]` — `scroll-margin-top: 2rem` so anchor targets clear the
-  viewport edge.
-- `a, button, input, textarea, select` — `touch-action: manipulation`;
-  `html` disables the WebKit tap highlight.
+- `html` — `scroll-behavior: smooth`, `-webkit-tap-highlight-color:
+  transparent`, and `scroll-padding-top: 4rem` so anchor jumps clear the
+  sticky section nav.
+- `a, button, input, textarea, select` — `touch-action: manipulation`.
 - `::selection` — cyan background with dark text.
 - WebKit scrollbar styling (8px, themed track/thumb).

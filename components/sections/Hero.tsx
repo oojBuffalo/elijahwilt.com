@@ -98,7 +98,7 @@ export function Hero() {
   }
 
   return (
-    <section className="min-h-screen flex flex-col justify-center px-6 py-20 max-w-6xl mx-auto">
+    <section className="min-h-screen flex flex-col justify-start sm:justify-center px-6 py-20 max-w-5xl mx-auto">
       {/* Static copy for assistive tech; the typed terminal below is decorative */}
       <div className="sr-only">
         <h1>{lines[0].output}</h1>
@@ -115,7 +115,7 @@ export function Hero() {
           // Future lines: render invisibly so layout doesn't shift as lines appear
           if (isFuture) {
             return (
-              <div key={index} className="invisible">
+              <div key={index} className="hidden sm:invisible sm:block">
                 <StaticPrompt line={line} />
                 <StaticOutput line={line} index={index} />
               </div>
@@ -186,7 +186,7 @@ export function Hero() {
         })}
       </div>
 
-      <div className="mt-16 animate-fade-in animate-delay-500">
+      <div className="mt-auto sm:mt-16 animate-fade-in animate-delay-500">
         <a
           href="#about"
           className="inline-flex items-center gap-2 text-text-secondary hover:text-accent-cyan transition-colors"

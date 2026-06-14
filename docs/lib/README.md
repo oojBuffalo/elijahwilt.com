@@ -30,7 +30,8 @@ The standard conditional-class idiom throughout the components:
 
 All site content as plain typed constants — no functions. Components import
 exactly the slices they render, so copy edits happen here, not in JSX.
-Types below are the inferred shapes.
+Types below are the inferred shapes unless an explicit `interface`/`type` is
+exported (the timeline entries are).
 
 ### `personalInfo`
 
@@ -69,8 +70,11 @@ Output text may contain `$…$` LaTeX spans, rendered by `Hero`'s `MathText`.
 ### `about`
 
 ```ts
-export const about: { paragraphs: string[] }  // 3 bio paragraphs
+export const about: { focusAreas: string[]; paragraphs: string[] }
 ```
+
+`focusAreas` is a short list of headline domains; `paragraphs` is the bio
+copy (2 paragraphs).
 
 ### `skills`
 
@@ -82,7 +86,8 @@ export const skills: Record<
 ```
 
 Four categories of skill names. Category keys double as the values of the
-`?skills=` deep-link parameter in `Skills.tsx`.
+`?skills=` deep-link parameter in `Skills.tsx` (which validates an incoming
+value with `Object.hasOwn(skills, category)` before treating it as expanded).
 
 ### `projects`
 
@@ -100,35 +105,46 @@ export const projects: {
 Five entries: `cottonweed`, `twitter-nlp`, `sudoku-sat`, `photogrammetry`,
 `cnc-router`.
 
-### `experience`
+### `timeline` and the `TimelineEntry` types
+
+A single unified work-and-education history replaces the former separate
+`experience` and `education` exports. The shapes are exported explicitly:
 
 ```ts
-export const experience: {
-  title: string;       // role
-  company: string;
-  period: string;      // human-readable range, e.g. "2021 – 2024"
+interface TimelineEntryBase {
+  title: string;   // job title or degree name
+  org: string;     // company or institution
+  period: string;  // human-readable range, e.g. "2024 – Present"
+}
+
+export interface WorkEntry extends TimelineEntryBase {
+  type: "work";
   description: string;
-}[]
-```
+}
 
-Four entries, most recent first.
-
-### `education`
-
-```ts
-export const education: {
-  degree: string;
-  institution: string;
-  period: string;
-  gpa?: string;         // OSU entry only
+export interface EducationEntry extends TimelineEntryBase {
+  type: "education";
+  major?: string;       // field of study, rendered under the degree
+  gpa?: string;
   coursework: string[];
-  current?: string[];   // in-progress courses — OSU entry only; not rendered by Education.tsx
-}[]
+}
+
+export type TimelineEntry = WorkEntry | EducationEntry;
+
+export const timeline: TimelineEntry[]
 ```
 
-Two entries (OSU graduate studies, Cornell B.S.). `gpa` and `current` exist
-only on the first entry; TypeScript infers them as optional on the union, so
-consumers must handle `undefined`.
+The `type` field discriminates the union: `Timeline.tsx` switches on it to
+render a `WorkCard` or an `EducationCard`. Both kinds share the base fields
+(`title`, `org`, `period`). `WorkEntry` adds `description`; `EducationEntry`
+adds optional `major`/`gpa` and a required `coursework` list (rendered in a
+collapsible `Disclosure`).
+
+`timeline` is ordered newest-first by hand (not derived from `period`, to
+avoid parsing fuzzy ranges like `"Jun – Dec 2019"`). It currently holds five
+entries spanning OSU post-baccalaureate coursework, Wilt Technologies, the
+Cornell B.S., and two earlier internships. Because `major`/`gpa` are optional
+on the union, consumers must handle `undefined`.
 
 ---
 
@@ -176,7 +192,9 @@ on cleanup. If `ref` is not attached to an element, the effect no-ops.
 
 ## `useSearchParam.ts`
 
-Client hook for reading a single query-string parameter SSR-safely.
+Client utilities for reading and writing a single query-string parameter
+SSR-safely. The URL query param is the single source of truth for the
+deep-linkable expanded state in `Projects` and `Skills`.
 
 ### `useSearchParam`
 
@@ -192,11 +210,37 @@ export function useSearchParam(name: string): string | null
 always `null` during SSR and the hydration render (the server snapshot),
 which prevents hydration mismatches for URL-dependent UI.
 
-**Behavior & caveats:** implemented with `useSyncExternalStore` and a no-op
-`subscribe`, so it reads `window.location.search` fresh on every render but
-**does not re-render on URL changes** (e.g. `history.replaceState` or
-back/forward). Callers that mutate the URL — `Projects` and `Skills` — track
-the user's choice in their own state and treat this hook's value only as the
-initial deep-link, so staleness after the first interaction is by design.
+**Behavior:** implemented with `useSyncExternalStore`, it is **reactive**.
+The `subscribe` function listens for the browser `popstate` event
+(back/forward navigation) **and** a custom `"app:searchparamchange"` event,
+so the hook re-renders whenever the URL changes — including in-app writes via
+`setSearchParam`, which `history.replaceState` would otherwise not surface
+(replaceState/pushState don't emit `popstate`). The store snapshot reads
+`window.location.search` fresh; the server snapshot is always `null`. Because
+the hook tracks the live URL, deep links work after the first interaction and
+across back/forward, so callers do **not** keep any separate local copy of
+the expanded state — they derive it directly from this value (e.g. `Skills`
+memoizes a `Set` keyed on the returned string).
+
 An alternative is Next's `useSearchParams`, which requires a `<Suspense>`
-boundary and re-renders on navigation; this hook deliberately avoids both.
+boundary; this hook deliberately avoids that while still re-rendering on
+navigation.
+
+### `setSearchParam`
+
+```ts
+export function setSearchParam(name: string, value: string | null): void
+```
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | The query parameter to set or clear |
+| `value` | `string \| null` | The new value; `null` (or empty string) deletes the param |
+
+Sets or clears a single query parameter in place via
+`history.replaceState` (so it does not spam the history stack), preserving
+the rest of the query string and the URL hash. It then dispatches the
+`"app:searchparamchange"` event so every `useSearchParam` subscriber
+re-renders. This is the write side of the source-of-truth pattern: `Projects`
+and `Skills` call it to expand/collapse, and read the result back through
+`useSearchParam`.

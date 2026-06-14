@@ -106,17 +106,16 @@ body {
     transform: none;
     transition: none;
   }
+
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* Focus visible styles */
 :focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
-}
-
-/* Keep anchor targets clear of the viewport edge */
-section[id] {
-  scroll-margin-top: 2rem;
 }
 
 /* Touch ergonomics */
@@ -130,6 +129,9 @@ select {
 
 html {
   -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+  /* Offset anchor jumps so targets clear the sticky section nav */
+  scroll-padding-top: 4rem;
 }
 
 /* Selection styles */

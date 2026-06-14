@@ -92,7 +92,7 @@ export function Contact() {
   ];
 
   return (
-    <section id="contact" ref={ref} className="px-6 py-20 max-w-4xl mx-auto">
+    <section id="contact" ref={ref} className="px-6 py-20 max-w-5xl mx-auto">
       <h2 className="font-mono text-text-secondary mb-8">
         <span className="text-accent-green">~/contact</span> $ cat links.txt
       </h2>
@@ -115,7 +115,7 @@ export function Contact() {
               href={link.href}
               target={link.label !== "Email" ? "_blank" : undefined}
               rel={link.label !== "Email" ? "noopener noreferrer" : undefined}
-              className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg bg-bg-primary text-text-primary hover:border-accent-cyan hover:text-accent-cyan transition-colors"
+              className="flex items-center gap-2 px-4 py-3 border border-border rounded-lg bg-bg-primary text-text-primary hover:border-accent-cyan hover:text-accent-cyan transition-colors"
             >
               {link.icon}
               <span className="font-mono text-sm">{link.label}</span>

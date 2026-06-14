@@ -60,16 +60,20 @@ export function TypeWriter(props: TypeWriterProps): JSX.Element
 `Cursor` while incomplete (if `showCursor`).
 
 **Behavior:**
-- A `setInterval` (every `delay` ms) extends the displayed slice one
-  character at a time; on the final character it clears the interval, marks
-  complete, and calls `onComplete`.
+- The animation effect resets `displayedText` to `""` and `isComplete` to
+  `false` at the start, then a `setInterval` (every `delay` ms) extends the
+  displayed slice one character at a time; on the final character it clears
+  the interval, marks complete, and calls `onComplete`. The slice is built by
+  stepping over Unicode code points (`Array.from(text)`), not UTF-16 units, so
+  an emoji never renders as a lone surrogate mid-animation.
 - **Reduced motion:** if `prefers-reduced-motion: reduce` matches at mount,
   the full text renders immediately and `onComplete` fires synchronously in
   the effect — no animation.
-- The effect re-runs (restarting the animation from empty) if `text`,
-  `delay`, or `onComplete` change identity. Callers passing inline arrow
-  functions for `onComplete` (as `Hero` does) rely on the parent not
-  re-rendering mid-animation with a new callback for unrelated reasons.
+- The animation effect's dependency array is `[text, delay]`. `onComplete` is
+  kept in a ref (`onCompleteRef`, refreshed by a separate effect each render)
+  and invoked through that ref, so passing a new `onComplete` identity (as
+  `Hero` does with inline arrows) does **not** re-run the effect or restart
+  typing — only a changed `text` or `delay` restarts the animation from empty.
 - The interval is cleared on unmount via the effect cleanup.
 
 ---

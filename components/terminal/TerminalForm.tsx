@@ -100,7 +100,7 @@ export function TerminalForm() {
             disabled={isPending}
             spellCheck={false}
             className="flex-1 bg-transparent border-none text-accent-cyan placeholder:text-text-secondary/50 caret-accent-cyan"
-            placeholder="you@example.com"
+            placeholder="your email…"
             autoComplete="email"
             {...fieldA11yProps("email")}
           />

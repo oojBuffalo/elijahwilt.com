@@ -46,6 +46,17 @@ export type ContactFormState = {
 
 ## Functions
 
+### `escapeHtml`
+
+```ts
+function escapeHtml(value: string): string
+```
+
+Module-private helper that escapes the five HTML-sensitive characters
+(`&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;`, `"` → `&quot;`, `'` → `&#39;`)
+so user-supplied form values can be safely interpolated into the HTML email
+body. Not exported.
+
 ### `sendContactEmail`
 
 ```ts
@@ -86,18 +97,23 @@ highlight every problem at once.
 **Email composition** (on validation pass):
 
 - **From:** `Contact Form <contact@elijahwilt.com>`
-- **To:** `elijahwilt@gmail.com`, `wilt.83@osu.edu`, `ew356@cornell.edu`
+- **To:** `["elijahwilt@gmail.com", personalInfo.email2, personalInfo.email]`
+  — a hardcoded Gmail inbox plus the addresses tracked in
+  [`lib/data.ts`](../../lib/README.md#datats), so editing `data.ts` keeps
+  delivery in sync. With the current data these resolve to `elijahwilt@gmail.com`,
+  `wilt.83@osu.edu`, and `ew356@cornell.edu`.
 - **Reply-To:** the submitter's email
 - **Subject:** `` `Contact from ${name} via elijahwilt.com` ``
-- **Body:** plain-text and HTML variants; the HTML variant converts message
-  newlines to `<br>`.
+- **Body:** plain-text and HTML variants. The HTML variant runs `name`,
+  `email`, and `message` through the module-level `escapeHtml()` helper before
+  interpolation, then converts message newlines to `<br>`.
 
 **Side effects:** sends one email via the Resend API; logs Resend errors and
 caught exceptions with `console.error`. Failure messages embed
 `personalInfo.email` from [`lib/data.ts`](../../lib/README.md#datats) as a
 fallback contact route.
 
-> **Note:** submitted `name`/`message` values are interpolated into the HTML
-> email body without HTML-escaping. The email is only delivered to the site
-> owner's inboxes, but treat this as a known limitation if the recipients or
-> template ever change.
+> **Note:** submitted `name`, `email`, and `message` values are HTML-escaped
+> via the module-level `escapeHtml()` helper (which escapes `&`, `<`, `>`,
+> `"`, and `'`) before being interpolated into the HTML email body, so the
+> rendered email is safe against HTML/markup injection from form input.

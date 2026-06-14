@@ -4,6 +4,7 @@ import { useInView } from "@/lib/useInView";
 import { useSearchParam, setSearchParam } from "@/lib/useSearchParam";
 import { projects } from "@/lib/data";
 import { cn } from "@/lib/cn";
+import { Disclosure } from "@/components/Disclosure";
 
 export function Projects() {
   const { ref, isInView } = useInView<HTMLElement>();
@@ -20,7 +21,7 @@ export function Projects() {
   };
 
   return (
-    <section id="projects" ref={ref} className="px-6 py-20 max-w-4xl mx-auto">
+    <section id="projects" ref={ref} className="px-6 py-20 max-w-5xl mx-auto">
       <h2 className="font-mono text-text-secondary mb-8">
         <span className="text-accent-green">~/projects</span> $ ls -la
       </h2>
@@ -41,11 +42,12 @@ export function Projects() {
             >
               <button
                 onClick={() => toggleProject(project.id)}
-                className="w-full px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between bg-bg-secondary hover:bg-border/30 transition-colors text-left gap-2"
+                className="w-full px-4 py-4 flex items-start justify-between gap-3 bg-bg-secondary hover:bg-border/30 transition-colors text-left"
                 aria-expanded={isExpanded}
+                aria-controls={`project-panel-${project.id}`}
               >
                 <div className="flex-1">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="font-mono font-bold text-text-primary">
                       {project.title}
                     </span>
@@ -59,7 +61,7 @@ export function Projects() {
                 </div>
                 <svg
                   className={cn(
-                    "w-5 h-5 text-text-secondary transition-transform shrink-0",
+                    "w-5 h-5 text-text-secondary transition-transform shrink-0 mt-0.5",
                     isExpanded && "rotate-180"
                   )}
                   fill="none"
@@ -76,30 +78,23 @@ export function Projects() {
                 </svg>
               </button>
 
-              <div
-                className={cn(
-                  "grid transition-[grid-template-rows] duration-300 motion-reduce:transition-none",
-                  isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-                )}
-              >
-                <div className="min-h-0 overflow-hidden">
-                  <div className="px-4 py-4 bg-bg-primary border-t border-border">
-                    <p className="text-text-primary mb-4">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {project.tech.map((tech) => (
-                        <span
-                          key={tech}
-                          className="px-2 py-1 text-xs font-mono bg-bg-secondary border border-border rounded text-accent-cyan"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
+              <Disclosure id={`project-panel-${project.id}`} open={isExpanded}>
+                <div className="px-4 py-4 bg-bg-primary border-t border-border">
+                  <p className="text-text-primary mb-4">
+                    {project.description}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {project.tech.map((tech) => (
+                      <span
+                        key={tech}
+                        className="px-2 py-1 text-xs font-mono bg-bg-secondary border border-border rounded text-accent-cyan"
+                      >
+                        {tech}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              </div>
+              </Disclosure>
             </div>
           );
         })}
