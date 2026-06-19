@@ -1,14 +1,14 @@
 export const personalInfo = {
   name: "Elijah Wayne Wilt",
   title: "Technologist\nML Engineer\nAgentic Engineer",
-  tagline: "I dwell inside a (bash) shell \u{1F99E}...",
-  subtitle: "Nondegree  | Grad  | The Ohio State University | Current\nB.S. in CS | UGrad | Cornell University | 2020",
+  tagline: "I dwell inside a (bash) shell \u{1F99E}…",
+  subtitle: "Grad  | AI @ tOSU    | Current\nUGrad | CS @ Cornell | 2020",
   email: "ew356@cornell.edu",
   email2: "wilt.83@osu.edu",
   email3: "ooj@wilttechnologies.com",
   github: "https://github.com/oojbuffalo",
   replit: "https://replit.com/@ooj",
-  linkedin: "https://linkedin.com/in/elijah-wilt",
+  linkedin: "https://linkedin.com/in/elijahwilt",
   x: "https://x.com/oojbuffalo",
 };
 
@@ -20,10 +20,15 @@ export const heroTerminalLines = [
 ];
 
 export const about = {
+  focusAreas: [
+    "Machine Learning",
+    "Data Systems",
+    "Embedded Systems",
+    "Full-Stack",
+  ],
   paragraphs: [
-    "I am a versatile engineer with strong foundations in machine learning, data systems, and full-stack development. Currently pursuing graduate studies at Ohio State University while bringing practical experience from building production systems—from embedded hardware to ML pipelines.",
-    "I'm someone who genuinely enjoys working with technology—not just the trendy stuff, but understanding how systems actually work. Whether it's training neural networks, writing shell scripts, or debugging embedded systems, I like getting my hands dirty with the technical details.",
-    "I love a good terminal workflow. There's something satisfying about elegant command-line tools and automation scripts. Recently built a Sudoku SAT solver with a TUI just for the fun of creating something clean and useful in the terminal.",
+    "I’m a versatile engineer with strong foundations in machine learning, data systems, and full-stack development—currently pursuing graduate studies at Ohio State, with hands-on experience building production systems from embedded hardware to ML pipelines.",
+    "I like understanding how systems actually work, not just the trendy parts—training neural networks, writing shell scripts, debugging embedded systems. And I love a good terminal workflow: I recently built a Sudoku SAT solver with a clean TUI just for the fun of it.",
   ],
 };
 
@@ -139,59 +144,69 @@ export const projects = [
   },
 ];
 
-export const experience = [
-  {
-    title: "Graduate Student",
-    company: "The Ohio State University",
-    period: "2024 – Present",
-    description:
-      "Pursuing graduate studies in ML/AI. Coursework includes Machine Learning, Neural Networks, Computer Vision, NLP. GPA: 3.88/4.00.",
-  },
-  {
-    title: "Founder & CEO",
-    company: "Wilt Technologies, LLC",
-    period: "2021 – 2024",
-    description:
-      "Ran independent consulting startup focused on rapid prototyping and product development. Built complete systems from scratch: hardware, firmware, software. Projects ranged from IoT devices to custom manufacturing equipment.",
-  },
-  {
-    title: "Software Engineer Intern",
-    company: "Architecture Technology Corporation",
-    period: "Jun – Dec 2019",
-    description:
-      "Contributed to Cyrm®, a cyber range platform for training military cybersecurity professionals. Built advanced instructional labs and worked on full-stack application features.",
-  },
-  {
-    title: "Data Security Specialist Intern",
-    company: "DataHub, LLC",
-    period: "Mar – Jun 2019",
-    description:
-      "Administered systems for IBM's Guardium distributed database security service. Worked with enterprise-scale data infrastructure.",
-  },
-];
+interface TimelineEntryBase {
+  /** Job title or degree name. */
+  title: string;
+  /** Company or institution. */
+  org: string;
+  /** Human-readable date range, e.g. "2024 – Present". */
+  period: string;
+}
 
-export const education = [
+export interface WorkEntry extends TimelineEntryBase {
+  type: "work";
+  description: string;
+}
+
+export interface EducationEntry extends TimelineEntryBase {
+  type: "education";
+  /** Field of study, rendered on its own line under the degree. */
+  major?: string;
+  gpa?: string;
+  coursework: string[];
+}
+
+export type TimelineEntry = WorkEntry | EducationEntry;
+
+/**
+ * Unified work + education history, ordered newest-first. Order is maintained
+ * by hand rather than derived from `period` so we never have to parse fuzzy
+ * ranges like "Jun – Dec 2019". On wide screens education renders on the left
+ * of a center spine and work on the right; on narrow screens it collapses to a
+ * single left-spine column.
+ */
+export const timeline: TimelineEntry[] = [
   {
-    degree: "Graduate Studies",
-    institution: "The Ohio State University",
+    type: "education",
+    title: "Post-Baccalaureate Coursework",
+    major: "Artificial Intelligence",
+    org: "The Ohio State University",
     period: "2024 – Present",
-    gpa: "3.88/4.00",
+    gpa: "3.93/4.00",
     coursework: [
       "Machine Learning & Statistical Pattern Recognition",
       "Neural Networks",
       "Data Mining",
       "Computer Vision for Human-Computer Interaction",
       "Speech & Language Processing",
-    ],
-    current: [
       "Embedded Computer Systems",
       "Software Startups",
-    ],
+    ]
   },
   {
-    degree: "B.S. Computer Science",
-    institution: "Cornell University",
-    period: "Graduated Dec 2020",
+    type: "work",
+    title: "Founder",
+    org: "Wilt Technologies, LLC",
+    period: "Jan 2021 – Aug 2024",
+    description:
+      "Ran independent consulting startup focused on rapid prototyping and product development. Built complete systems from scratch: hardware, firmware, software. Projects ranged from IoT devices to custom manufacturing equipment.",
+  },
+  {
+    type: "education",
+    title: "Bachelor of Science",
+    major: "Computer Science",
+    org: "Cornell University",
+    period: "Dec 2020",
     coursework: [
       "Artificial Intelligence",
       "Machine Learning",
@@ -201,5 +216,21 @@ export const education = [
       "Computer System Organization",
       "Operating Systems & Networks",
     ],
+  },
+  {
+    type: "work",
+    title: "Software Engineer Intern",
+    org: "Architecture Technology Corporation",
+    period: "Jun – Dec 2019",
+    description:
+      "Contributed to Cyrm®, a cyber range platform for training military cybersecurity professionals. Built advanced instructional labs and worked on full-stack application features.",
+  },
+  {
+    type: "work",
+    title: "Data Security Specialist Intern",
+    org: "DataHub, LLC",
+    period: "Mar – Jun 2019",
+    description:
+      "Administered systems for IBM’s Guardium distributed database security service. Worked with enterprise-scale data infrastructure.",
   },
 ];

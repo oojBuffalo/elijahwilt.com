@@ -1,20 +1,27 @@
 "use client";
 
-import { useState } from "react";
 import { useInView } from "@/lib/useInView";
+import { useSearchParam, setSearchParam } from "@/lib/useSearchParam";
 import { projects } from "@/lib/data";
 import { cn } from "@/lib/cn";
+import { Disclosure } from "@/components/Disclosure";
 
 export function Projects() {
   const { ref, isInView } = useInView<HTMLElement>();
-  const [expandedProject, setExpandedProject] = useState<string | null>(null);
+  // Deep-link: the ?project= param is the single source of truth for which
+  // panel is open. useSearchParam re-renders on URL changes (incl. back/forward).
+  const urlProject = useSearchParam("project");
+  const expandedProject =
+    urlProject && projects.some((project) => project.id === urlProject)
+      ? urlProject
+      : null;
 
   const toggleProject = (id: string) => {
-    setExpandedProject((prev) => (prev === id ? null : id));
+    setSearchParam("project", expandedProject === id ? null : id);
   };
 
   return (
-    <section id="projects" ref={ref} className="px-6 py-20 max-w-4xl mx-auto">
+    <section id="projects" ref={ref} className="px-6 py-20 max-w-5xl mx-auto">
       <h2 className="font-mono text-text-secondary mb-8">
         <span className="text-accent-green">~/projects</span> $ ls -la
       </h2>
@@ -35,11 +42,12 @@ export function Projects() {
             >
               <button
                 onClick={() => toggleProject(project.id)}
-                className="w-full px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between bg-bg-secondary hover:bg-border/30 transition-colors text-left gap-2"
+                className="w-full px-4 py-4 flex items-start justify-between gap-3 bg-bg-secondary hover:bg-border/30 transition-colors text-left"
                 aria-expanded={isExpanded}
+                aria-controls={`project-panel-${project.id}`}
               >
                 <div className="flex-1">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="font-mono font-bold text-text-primary">
                       {project.title}
                     </span>
@@ -53,12 +61,13 @@ export function Projects() {
                 </div>
                 <svg
                   className={cn(
-                    "w-5 h-5 text-text-secondary transition-transform shrink-0",
+                    "w-5 h-5 text-text-secondary transition-transform shrink-0 mt-0.5",
                     isExpanded && "rotate-180"
                   )}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -69,14 +78,11 @@ export function Projects() {
                 </svg>
               </button>
 
-              <div
-                className={cn(
-                  "overflow-hidden transition-all duration-300",
-                  isExpanded ? "max-h-96" : "max-h-0"
-                )}
-              >
+              <Disclosure id={`project-panel-${project.id}`} open={isExpanded}>
                 <div className="px-4 py-4 bg-bg-primary border-t border-border">
-                  <p className="text-text-primary mb-4">{project.description}</p>
+                  <p className="text-text-primary mb-4">
+                    {project.description}
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {project.tech.map((tech) => (
                       <span
@@ -88,7 +94,7 @@ export function Projects() {
                     ))}
                   </div>
                 </div>
-              </div>
+              </Disclosure>
             </div>
           );
         })}
