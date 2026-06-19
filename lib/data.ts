@@ -96,51 +96,176 @@ export const skills = {
   ],
 };
 
-export const projects = [
+/** Visual category of a project; drives the editor-tab file extension. */
+export type ProjectType =
+  | "Computer Vision"
+  | "NLP"
+  | "Machine Learning"
+  | "Software"
+  | "Hardware";
+
+/** Lifecycle badge shown in the detail pane. Defaults to "shipped" in the UI. */
+export type ProjectStatus = "shipped" | "wip" | "archived";
+
+/** A single project — a "file" in the explorer tree. */
+export interface Project {
+  /** Stable slug; used as the `?project=` deep-link value and React key. */
+  id: string;
+  title: string;
+  summary: string;
+  description: string;
+  tech: string[];
+  type: ProjectType;
+  /** GitHub URL; renders a "View on GitHub" link when present. */
+  repo?: string;
+  /** Lifecycle badge; defaults to "shipped" when omitted. */
+  status?: ProjectStatus;
+  /**
+   * Scaffold placeholder. Renders dimmed and non-interactive, and is excluded
+   * from deep-link targets. Replace with a real project to "fill in" the slot.
+   */
+  todo?: boolean;
+}
+
+/** A named subdirectory (a course or a company) holding project files. */
+export interface ProjectDir {
+  /** Stable slug — used for the `?dirs=` expand-state and element ids. */
+  id: string;
+  /** Display name without trailing slash, e.g. "Neural Networks". */
+  name: string;
+  projects: Project[];
+}
+
+/** A top-level directory. Either nests subdirs (coursework/professional) or holds flat files (personal). */
+export interface ProjectCategory {
+  id: "coursework" | "professional" | "personal";
+  /** Shown as "<name>/". */
+  name: string;
+  /** Course/company subdirectories. */
+  dirs?: ProjectDir[];
+  /** Flat files directly in the category (personal). */
+  projects?: Project[];
+}
+
+/** Convenience for a scaffold placeholder file under a given course/company. */
+const todoProject = (id: string, context: string): Project => ({
+  id,
+  title: "Coming soon",
+  summary: `Placeholder — add a project for ${context}.`,
+  description: "",
+  tech: [],
+  type: "Software",
+  todo: true,
+});
+
+/**
+ * Projects as an explorer tree, ordered by hand (like `timeline`). Course names
+ * and company names mirror the `timeline` coursework/work entries verbatim.
+ * Categorization of the existing projects is a best guess — moving a project
+ * between courses/companies is a one-line array edit.
+ */
+export const projectTree: ProjectCategory[] = [
   {
-    id: "cottonweed",
-    title: "Cottonweed Detection",
-    summary: "Agricultural weed detection using computer vision and transfer learning",
-    description:
-      "Took on a Kaggle competition for agricultural weed detection and extended it significantly beyond baseline. Applied transfer learning with modern vision architectures and ensemble techniques. Explored parameter-efficient fine-tuning methods to improve model performance.",
-    tech: ["PyTorch", "Transformers", "timm", "OpenCV", "Albumentations", "W&B"],
-    type: "Computer Vision",
+    id: "coursework",
+    name: "coursework",
+    dirs: [
+      {
+        id: "cv-hci",
+        name: "Computer Vision for Human-Computer Interaction",
+        projects: [
+          {
+            id: "cottonweed",
+            title: "Cottonweed Detection",
+            summary:
+              "Agricultural weed detection using computer vision and transfer learning",
+            description:
+              "Took on a Kaggle competition for agricultural weed detection and extended it significantly beyond baseline. Applied transfer learning with modern vision architectures and ensemble techniques. Explored parameter-efficient fine-tuning methods to improve model performance.",
+            tech: ["PyTorch", "Transformers", "timm", "OpenCV", "Albumentations", "W&B"],
+            type: "Computer Vision",
+            status: "shipped",
+          },
+        ],
+      },
+      {
+        id: "speech-language",
+        name: "Speech & Language Processing",
+        projects: [
+          {
+            id: "twitter-nlp",
+            title: "Twitter NLP Study",
+            summary: "Investigating how emotion influences engagement during COVID-19",
+            description:
+              "Investigated how emotion and sentiment influence engagement on Twitter during COVID-19. Extracted polarity, VAD, and 11 emotion categories from tweets using both lexicon-based methods and transformer models. Decomposed text embeddings into orthogonal affect/non-affect subspaces to isolate emotional content contribution.",
+            tech: ["PyTorch", "BERT", "RoBERTa", "NLTK", "SpaCy", "Scikit-learn"],
+            type: "NLP",
+            status: "shipped",
+          },
+        ],
+      },
+      {
+        id: "neural-networks",
+        name: "Neural Networks",
+        projects: [todoProject("todo-neural-networks", "Neural Networks")],
+      },
+      {
+        id: "machine-learning",
+        name: "Machine Learning & Statistical Pattern Recognition",
+        projects: [
+          todoProject(
+            "todo-machine-learning",
+            "Machine Learning & Statistical Pattern Recognition"
+          ),
+        ],
+      },
+    ],
   },
   {
-    id: "twitter-nlp",
-    title: "Twitter NLP Study",
-    summary: "Investigating how emotion influences engagement during COVID-19",
-    description:
-      "Investigated how emotion and sentiment influence engagement on Twitter during COVID-19. Extracted polarity, VAD, and 11 emotion categories from tweets using both lexicon-based methods and transformer models. Decomposed text embeddings into orthogonal affect/non-affect subspaces to isolate emotional content contribution.",
-    tech: ["PyTorch", "BERT", "RoBERTa", "NLTK", "SpaCy", "Scikit-learn"],
-    type: "NLP",
+    id: "professional",
+    name: "professional",
+    dirs: [
+      {
+        id: "wilt-technologies",
+        name: "Wilt Technologies LLC",
+        projects: [
+          {
+            id: "cnc-router",
+            title: "CNC Router",
+            summary: "Complete machine build with custom electronics and web interface",
+            description:
+              "Complete machine build: aluminum frame, steel components, custom electronics. Configured grblHAL firmware with TMC2209 stepper drivers. Raspberry Pi web interface for remote operation and job management.",
+            tech: ["grblHAL", "TMC2209", "Raspberry Pi", "CNC", "G-code"],
+            type: "Hardware",
+            status: "shipped",
+          },
+          {
+            id: "photogrammetry",
+            title: "Photogrammetry Scanner",
+            summary: "Custom hardware build with OAK-D camera on motorized turntable",
+            description:
+              "Custom hardware build: OAK-D Lite camera on motorized turntable. ESP32 MCU controlling stepper motor with rotary encoder interface. Parameterized capture sequences for different scanning modes.",
+            tech: ["ESP32", "OAK-D", "Python", "Stepper Motors", "3D Scanning"],
+            type: "Hardware",
+            status: "shipped",
+          },
+        ],
+      },
+    ],
   },
   {
-    id: "sudoku-sat",
-    title: "Sudoku SAT Solver",
-    summary: "Constraint satisfaction solver with polished terminal interface",
-    description:
-      "Built for fun—a constraint satisfaction solver with a polished command-line interface. Clean, navigable TUI for an elegant terminal experience. Currently cleaning up for GitHub release.",
-    tech: ["Python", "SAT Solver", "TUI", "Constraint Satisfaction"],
-    type: "Software",
-  },
-  {
-    id: "photogrammetry",
-    title: "Photogrammetry Scanner",
-    summary: "Custom hardware build with OAK-D camera on motorized turntable",
-    description:
-      "Custom hardware build: OAK-D Lite camera on motorized turntable. ESP32 MCU controlling stepper motor with rotary encoder interface. Parameterized capture sequences for different scanning modes.",
-    tech: ["ESP32", "OAK-D", "Python", "Stepper Motors", "3D Scanning"],
-    type: "Hardware",
-  },
-  {
-    id: "cnc-router",
-    title: "CNC Router",
-    summary: "Complete machine build with custom electronics and web interface",
-    description:
-      "Complete machine build: aluminum frame, steel components, custom electronics. Configured grblHAL firmware with TMC2209 stepper drivers. Raspberry Pi web interface for remote operation and job management.",
-    tech: ["grblHAL", "TMC2209", "Raspberry Pi", "CNC", "G-code"],
-    type: "Hardware",
+    id: "personal",
+    name: "personal",
+    projects: [
+      {
+        id: "sudoku-sat",
+        title: "Sudoku SAT Solver",
+        summary: "Constraint satisfaction solver with polished terminal interface",
+        description:
+          "Built for fun—a constraint satisfaction solver with a polished command-line interface. Clean, navigable TUI for an elegant terminal experience. Currently cleaning up for GitHub release.",
+        tech: ["Python", "SAT Solver", "TUI", "Constraint Satisfaction"],
+        type: "Software",
+        status: "wip",
+      },
+    ],
   },
 ];
 

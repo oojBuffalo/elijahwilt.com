@@ -30,7 +30,7 @@ RootLayout (app/layout.tsx — fonts, metadata, skip link)
         ├── <Hero />        animated terminal intro
         ├── <About />       bio paragraphs
         ├── <Timeline />    unified work + education history (collapsible coursework)
-        ├── <Projects />    expandable project cards (deep-linkable via ?project=)
+        ├── <Projects />    file-explorer tree + responsive detail pane
         ├── <Skills />      expandable skill categories (deep-linkable via ?skills=)
         ├── <Contact />     social links + terminal-styled contact form
         └── footer
@@ -57,25 +57,26 @@ contact form, which posts through a React 19 Server Action
 - **Scroll reveal.** Sections pair `useInView` with the `.scroll-reveal` /
   `.visible` CSS classes (defined in `globals.css`) and stagger children with
   inline `transitionDelay` styles.
-- **Deep links via the URL.** Projects and Skills derive their expanded state
-  directly from the query string (`?project=` / `?skills=`) — the URL is the
-  single source of truth, not local component state. They read it with the
-  reactive `useSearchParam` hook and write it with `setSearchParam`
+- **Deep links via the URL.** Projects and Skills derive their interactive state
+  directly from the query string (`?project=` / `?dirs=` / `?skills=`) — the
+  URL is the single source of truth, not local component state. They read it
+  with the reactive `useSearchParam` hook and write it with `setSearchParam` or
+  the atomic `setSearchParams` helper
   ([`lib/useSearchParam`](lib/README.md#usesearchparamts)), so deep links work
   on first load, after interaction, and on browser back/forward.
 - **Shared collapsible.** `components/Disclosure.tsx` (`<Disclosure id open>`)
   renders the grid-rows `0fr → 1fr` height transition plus the a11y wiring
-  (`id`, `aria-hidden`, `inert`) for collapsible panels. Projects, Skills, and
-  the Timeline coursework accordion all use it; each caller keeps its own
+  (`id`, `aria-hidden`, `inert`) for collapsible panels. Skills and the
+  Timeline coursework accordion use it; each caller keeps its own
   trigger button wired with `aria-expanded` / `aria-controls={id}`.
 - **Terminal aesthetic.** Section headings are styled as shell prompts
   (`~/about $ cat bio.txt`), and theme tokens (`bg-primary`, `accent-green`,
   …) are GitHub-dark-inspired colors defined in `globals.css` via Tailwind v4
   `@theme inline`.
 - **Reduced motion.** All animation paths honor `prefers-reduced-motion`:
-  CSS animations are disabled in a media query, the `Disclosure` transition is
-  dropped (`motion-reduce:transition-none`), and `TypeWriter` skips typing
-  entirely.
+  CSS animations are disabled in a media query, disclosure/tree transitions
+  are dropped (`motion-reduce:transition-none`), mobile project-detail scrolling
+  becomes instant, and `TypeWriter` skips typing entirely.
 - **Accessibility.** Decorative terminal animation is `aria-hidden` with an
   `sr-only` static copy; the form has labeled fields, inline errors wired via
   `aria-describedby`/`aria-invalid`, and a polite live region for status.
