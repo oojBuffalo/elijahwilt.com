@@ -144,34 +144,28 @@ URL-driven.
 export function Projects(): JSX.Element
 ```
 
-Accordion of project cards from `projects`, deep-linkable via the
-`?project=<id>` query parameter. Heading: `~/projects $ ls -la`.
+VS Code-style explorer backed by `projectTree`. Categories contain course or
+company directories and project “files”; selecting a file renders its details
+in a sticky editor pane on desktop and a full-width pane below the tree on
+mobile. Heading: `~/projects $ tree`.
 
-**The URL is the single source of truth.** There is no local toggle state:
-expansion is derived directly from
-[`useSearchParam("project")`](../../lib/README.md#usesearchparamts), and the
-button writes via
-[`setSearchParam`](../../lib/README.md#setsearchparam). Because
-`useSearchParam` re-renders on URL changes (including browser back/forward),
-deep links work on first load *and* after interaction.
+`ProjectsExplorer` treats the URL as the source of truth:
 
-**Derived value:**
+| Parameter | Meaning |
+| --- | --- |
+| `?project=<id>` | Selected real project; unknown and placeholder ids are ignored |
+| `?dirs=<id,id>` | Explicit set of expanded category/directory ids |
 
-| Name | Type | Meaning |
-| --- | --- | --- |
-| `urlProject` | `string \| null` | From `useSearchParam("project")` |
-| `expandedProject` | `string \| null` | `urlProject` when it matches a known project id (`projects.some(p => p.id === urlProject)`); otherwise `null` |
+Without `?dirs=`, directories containing real projects open by default and a
+deep-linked project’s ancestors are added. Once `?dirs=` is present it wins,
+including the empty value. Selection and directory updates are written
+atomically with [`setSearchParams`](../../lib/README.md#setsearchparams), so
+subscribers and browser back/forward navigation remain synchronized.
 
-**`toggleProject(id: string): void`** — calls
-`setSearchParam("project", expandedProject === id ? null : id)`: collapses the
-card if it is already the expanded one, otherwise opens it (one card open at a
-time). `setSearchParam` performs the `replaceState` write that preserves the
-rest of the query string and hash.
-
-**Markup notes:** the toggle `<button>` carries `aria-expanded` and
-`aria-controls`; the panel is a shared [`Disclosure`](#disclosuretsx)
-(`id={\`project-panel-${project.id}\`}`) showing `description` and `tech`
-badge chips.
+Directory rows use disclosure buttons (`aria-expanded`, `aria-controls`,
+`aria-hidden`, `inert`); project rows use native buttons with `aria-pressed`.
+The structure deliberately avoids `role="tree"`, whose required arrow-key and
+roving-tabindex behavior is unnecessary for this small static hierarchy.
 
 ---
 
@@ -186,7 +180,7 @@ Accordion of skill categories from `skills`, deep-linkable via
 ignored). Multiple categories can be open simultaneously. Heading:
 `~/skills $ ls -la`.
 
-**The URL is the single source of truth** — same model as `Projects`, with no
+**The URL is the single source of truth** — same model as Projects, with no
 local toggle state. Expansion derives from
 [`useSearchParam("skills")`](../../lib/README.md#usesearchparamts) and writes
 go through [`setSearchParam`](../../lib/README.md#setsearchparam).
@@ -204,9 +198,8 @@ the `skills` param via
 `setSearchParam("skills", next.size > 0 ? Array.from(next).join(",") : null)`
 (the param is deleted when the set is empty).
 
-Same `aria-expanded` / `aria-controls` button and shared
-[`Disclosure`](#disclosuretsx) panel as `Projects` (panel id derived from the
-category name).
+Each button uses `aria-expanded` / `aria-controls` with a shared
+[`Disclosure`](#disclosuretsx) panel (panel id derived from the category name).
 
 ---
 
@@ -257,8 +250,7 @@ skip-style `~` link to `#main-content`.
 ## `Disclosure.tsx`
 
 > Lives at `components/Disclosure.tsx`. Documented here because it is the
-> shared collapsible panel used by `Projects`, `Skills`, and `Timeline`'s
-> coursework.
+> shared collapsible panel used by `Skills` and `Timeline`'s coursework.
 
 ```tsx
 export function Disclosure({

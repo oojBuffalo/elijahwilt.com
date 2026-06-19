@@ -89,21 +89,44 @@ Four categories of skill names. Category keys double as the values of the
 `?skills=` deep-link parameter in `Skills.tsx` (which validates an incoming
 value with `Object.hasOwn(skills, category)` before treating it as expanded).
 
-### `projects`
+### `projectTree` and project types
 
 ```ts
-export const projects: {
-  id: string;          // stable slug; the ?project= deep-link value
+export type ProjectType =
+  | "Computer Vision" | "NLP" | "Machine Learning" | "Software" | "Hardware";
+export type ProjectStatus = "shipped" | "wip" | "archived";
+
+export interface Project {
+  id: string;
   title: string;
-  summary: string;     // one-liner shown collapsed
-  description: string; // full text shown expanded
-  tech: string[];      // badge chips
-  type: string;        // category tag: "Computer Vision" | "NLP" | "Software" | "Hardware"
-}[]
+  summary: string;
+  description: string;
+  tech: string[];
+  type: ProjectType;
+  repo?: string;
+  status?: ProjectStatus;
+  todo?: boolean;
+}
+
+export interface ProjectDir {
+  id: string;
+  name: string;
+  projects: Project[];
+}
+
+export interface ProjectCategory {
+  id: "coursework" | "professional" | "personal";
+  name: string;
+  dirs?: ProjectDir[];
+  projects?: Project[];
+}
+
+export const projectTree: ProjectCategory[]
 ```
 
-Five entries: `cottonweed`, `twitter-nlp`, `sudoku-sat`, `photogrammetry`,
-`cnc-router`.
+The explorer hierarchy groups the five real projects under coursework,
+professional, and personal categories. `todo` entries render as noninteractive
+“coming soon” placeholders and are excluded from deep-link validation.
 
 ### `timeline` and the `TimelineEntry` types
 
@@ -192,7 +215,7 @@ on cleanup. If `ref` is not attached to an element, the effect no-ops.
 
 ## `useSearchParam.ts`
 
-Client utilities for reading and writing a single query-string parameter
+Client utilities for reading and writing query-string parameters
 SSR-safely. The URL query param is the single source of truth for the
 deep-linkable expanded state in `Projects` and `Skills`.
 
@@ -214,7 +237,7 @@ which prevents hydration mismatches for URL-dependent UI.
 The `subscribe` function listens for the browser `popstate` event
 (back/forward navigation) **and** a custom `"app:searchparamchange"` event,
 so the hook re-renders whenever the URL changes — including in-app writes via
-`setSearchParam`, which `history.replaceState` would otherwise not surface
+`setSearchParam`/`setSearchParams`, which `history.replaceState` would otherwise not surface
 (replaceState/pushState don't emit `popstate`). The store snapshot reads
 `window.location.search` fresh; the server snapshot is always `null`. Because
 the hook tracks the live URL, deep links work after the first interaction and
@@ -244,3 +267,15 @@ the rest of the query string and the URL hash. It then dispatches the
 re-renders. This is the write side of the source-of-truth pattern: `Projects`
 and `Skills` call it to expand/collapse, and read the result back through
 `useSearchParam`.
+
+### `setSearchParams`
+
+```ts
+export function setSearchParams(
+  updates: Record<string, string | null>
+): void
+```
+
+Applies several set/delete operations to one `URLSearchParams` snapshot, writes
+the URL once with `history.replaceState`, then dispatches one change event.
+`ProjectsExplorer` uses it to keep `project` and `dirs` synchronized atomically.

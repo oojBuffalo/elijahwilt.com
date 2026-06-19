@@ -34,11 +34,20 @@ export function useSearchParam(name: string): string | null {
  * notify `useSearchParam` subscribers. Pass null/empty to delete the param.
  */
 export function setSearchParam(name: string, value: string | null): void {
+  setSearchParams({ [name]: value });
+}
+
+/** Atomically update several query-string parameters and notify subscribers. */
+export function setSearchParams(
+  updates: Record<string, string | null>
+): void {
   const params = new URLSearchParams(window.location.search);
-  if (value) {
-    params.set(name, value);
-  } else {
-    params.delete(name);
+  for (const [name, value] of Object.entries(updates)) {
+    if (value) {
+      params.set(name, value);
+    } else {
+      params.delete(name);
+    }
   }
   const query = params.toString();
   window.history.replaceState(
