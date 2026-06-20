@@ -1,0 +1,79 @@
+name: CI / Deploy
+
+# Runs lint + build on every push and PR to main (the CI gate). On a push to
+# main that passes the gate, SSHes into the production server and redeploys.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Never let two deploys run at once; let an in-flight deploy finish rather than
+# cancelling it mid-way.
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  # ── CI gate: lint + production build ────────────────────────────────────────
+  ci:
+    name: Lint & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20" # matches node:20-alpine in the Dockerfile
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  # ── Deploy: only on a direct push to main, after the gate is green ──────────
+  deploy:
+    name: Deploy to server
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          PORT="${SSH_PORT:-22}"
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Trust the server's host key. Prefer a pinned SSH_KNOWN_HOSTS secret;
+          # otherwise fall back to scanning it on first connect (TOFU).
+          if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "$PORT" "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+
+          # Sync the checkout on the server to exactly origin/main, then run the
+          # freshly-pulled deploy script (build image + restart container).
+          ssh -i ~/.ssh/deploy_key -p "$PORT" "$SSH_USER@$SSH_HOST" \
+            "set -euo pipefail
+             cd '$DEPLOY_PATH'
+             git fetch --prune origin main
+             git reset --hard origin/main
+             ./scripts/deploy.sh"
