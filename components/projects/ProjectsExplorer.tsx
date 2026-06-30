@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import { projectTree, type Project } from "@/lib/data";
+import { type Project, type ProjectCategory } from "@/lib/data";
 import { setSearchParams, useSearchParam } from "@/lib/useSearchParam";
 import {
   collectDirIds,
@@ -13,21 +13,27 @@ import {
 import { ProjectTree } from "./ProjectTree";
 import { DetailPane } from "./DetailPane";
 
-export function ProjectsExplorer({ isInView }: { isInView: boolean }) {
+export function ProjectsExplorer({
+  tree,
+  isInView,
+}: {
+  tree: ProjectCategory[];
+  isInView: boolean;
+}) {
   // Deep-link state: ?project= selects a file, ?dirs= controls expanded folders.
   const urlProject = useSearchParam("project");
   const urlDirs = useSearchParam("dirs");
 
-  const validIds = useMemo(() => selectableIds(projectTree), []);
-  const dirIds = useMemo(() => collectDirIds(projectTree), []);
-  const defaultDirs = useMemo(() => defaultExpandedDirs(projectTree), []);
+  const validIds = useMemo(() => selectableIds(tree), [tree]);
+  const dirIds = useMemo(() => collectDirIds(tree), [tree]);
+  const defaultDirs = useMemo(() => defaultExpandedDirs(tree), [tree]);
   const projectsById = useMemo(() => {
     const map = new Map<string, Project>();
-    for (const project of flattenProjects(projectTree)) {
+    for (const project of flattenProjects(tree)) {
       map.set(project.id, project);
     }
     return map;
-  }, []);
+  }, [tree]);
 
   const selectedId =
     urlProject && validIds.has(urlProject) ? urlProject : null;
@@ -40,10 +46,10 @@ export function ProjectsExplorer({ isInView }: { isInView: boolean }) {
       ? new Set((urlDirs ?? "").split(",").filter((id) => dirIds.has(id)))
       : new Set(defaultDirs);
     if (!hasExplicitDirs && selectedId) {
-      findPath(projectTree, selectedId)?.forEach((id) => base.add(id));
+      findPath(tree, selectedId)?.forEach((id) => base.add(id));
     }
     return base;
-  }, [urlDirs, selectedId, dirIds, defaultDirs]);
+  }, [urlDirs, selectedId, dirIds, defaultDirs, tree]);
 
   const selectedProject = selectedId
     ? projectsById.get(selectedId) ?? null
@@ -84,7 +90,7 @@ export function ProjectsExplorer({ isInView }: { isInView: boolean }) {
     <div>
       <div className="md:grid md:grid-cols-[minmax(0,20rem)_1fr] md:items-start md:gap-8">
         <ProjectTree
-          tree={projectTree}
+          tree={tree}
           expandedDirs={expandedDirs}
           selectedId={selectedId}
           onToggleDir={handleToggleDir}
