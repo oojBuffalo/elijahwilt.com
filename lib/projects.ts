@@ -49,6 +49,7 @@ export const projectTree: ProjectCategory[] = [
             tech: ["PyTorch", "Transformers", "timm", "OpenCV", "Albumentations", "W&B"],
             type: "Computer Vision",
             status: "shipped",
+            repo: "https://github.com/oojBuffalo/weed-detect",
           },
           {
             id: "cse5524-rpn",
@@ -197,7 +198,6 @@ export const projectTree: ProjectCategory[] = [
   {
     id: "professional",
     name: "professional",
-    enabled: false,
     dirs: [
       {
         id: "wilt-technologies",
@@ -206,9 +206,9 @@ export const projectTree: ProjectCategory[] = [
           {
             id: "cnc-router",
             title: "CNC Router",
-            summary: "Complete machine build with custom electronics and web interface",
+            summary: "Self-built CNC machine — frame, custom electronics, and a web control panel",
             description:
-              "Complete machine build: aluminum frame, steel components, custom electronics. Configured grblHAL firmware with TMC2209 stepper drivers. Raspberry Pi web interface for remote operation and job management.",
+              "One of several in-house tools I built to run Wilt Technologies' prototyping work: aluminum frame and steel components, custom electronics, grblHAL firmware tuned for TMC2209 stepper drivers, and a Raspberry Pi web interface for remote operation and job management. Built to use rather than sell — full ownership of the mechanical, firmware, and software stack.",
             tech: ["grblHAL", "TMC2209", "Raspberry Pi", "CNC", "G-code"],
             type: "Hardware",
             status: "shipped",
@@ -216,9 +216,9 @@ export const projectTree: ProjectCategory[] = [
           {
             id: "photogrammetry",
             title: "Photogrammetry Scanner",
-            summary: "Custom hardware build with OAK-D camera on motorized turntable",
+            summary: "OAK-D depth camera on a motorized turntable for 3D capture",
             description:
-              "Custom hardware build: OAK-D Lite camera on motorized turntable. ESP32 MCU controlling stepper motor with rotary encoder interface. Parameterized capture sequences for different scanning modes.",
+              "A 3D-scanning rig built around an OAK-D Lite depth/vision camera on a motorized turntable, with an ESP32 driving the stepper motor through a rotary-encoder interface and parameterized capture sequences for different scan modes. Another self-directed build for the shop — pairing computer-vision hardware with embedded control and Python tooling.",
             tech: ["ESP32", "OAK-D", "Python", "Stepper Motors", "3D Scanning"],
             type: "Hardware",
             status: "shipped",
@@ -236,10 +236,11 @@ export const projectTree: ProjectCategory[] = [
         title: "Sudoku SAT Solver",
         summary: "Constraint satisfaction solver with polished terminal interface",
         description:
-          "Built for fun—a constraint satisfaction solver with a polished command-line interface. Clean, navigable TUI for an elegant terminal experience. Currently cleaning up for GitHub release.",
+          "Built for fun — a constraint-satisfaction solver with a polished command-line interface and a clean, navigable TUI for an elegant terminal experience.",
         tech: ["Python", "SAT Solver", "TUI", "Constraint Satisfaction"],
         type: "Software",
-        status: "wip",
+        status: "shipped",
+        repo: "https://github.com/oojBuffalo/sudoku-sat",
       },
     ],
   },
