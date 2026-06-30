@@ -2,8 +2,9 @@
 
 import { useInView } from "@/lib/useInView";
 import { ProjectsExplorer } from "@/components/projects/ProjectsExplorer";
+import { type ProjectCategory } from "@/lib/data";
 
-export function Projects() {
+export function Projects({ tree }: { tree: ProjectCategory[] }) {
   const { ref, isInView } = useInView<HTMLElement>();
 
   return (
@@ -12,7 +13,7 @@ export function Projects() {
         <span className="text-accent-green">~/projects</span> $ tree
       </h2>
 
-      <ProjectsExplorer isInView={isInView} />
+      <ProjectsExplorer tree={tree} isInView={isInView} />
     </section>
   );
 }

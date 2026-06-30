@@ -5,6 +5,7 @@ import { Projects } from "@/components/sections/Projects";
 import { Timeline } from "@/components/sections/Timeline";
 import { Contact } from "@/components/sections/Contact";
 import { Nav } from "@/components/Nav";
+import { visibleProjectTree } from "@/lib/projects";
 
 export default function Home() {
   return (
@@ -14,7 +15,7 @@ export default function Home() {
         <Hero />
         <About />
         <Timeline />
-        <Projects />
+        <Projects tree={visibleProjectTree} />
         <Skills />
         <Contact />
 
